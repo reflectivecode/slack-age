@@ -39,7 +39,7 @@ resource "aws_iam_role_policy" "policy" {
 
 resource "aws_lambda_function" "lambda" {
   filename         = "${data.archive_file.file.output_path}"
-  source_code_hash = "${data.archive_file.file.output_sha}"
+  source_code_hash = "${data.archive_file.file.output_base64sha256}"
   function_name    = "${var.name}"
   role             = "${aws_iam_role.role.arn}"
   runtime          = "${var.runtime}"
