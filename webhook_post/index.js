@@ -80,7 +80,7 @@ exports.handler = (event, context, callback) => {
         "text1": texts.text1
       })
     };
-    
+
     httpsRequest(options).then(json => {
       var response = JSON.parse(json);
       if (!response.success) {
