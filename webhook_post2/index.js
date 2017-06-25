@@ -11,7 +11,7 @@ exports.handler = (event, context, callback) => {
   var payload = querystring.parse(event.body);
   if (payload.token !== token) throw "auth error";
   console.log(payload);
-  
+
   var texts = split(payload.text);
   var options = {
     host: 'api.imgflip.com',
@@ -25,7 +25,7 @@ exports.handler = (event, context, callback) => {
       "text1": texts.text1
     })
   };
-  
+
   httpsRequest(options).then(json => {
     var response = JSON.parse(json);
     if (!response.success) {
@@ -40,13 +40,6 @@ exports.handler = (event, context, callback) => {
         }
       ]
     };
-  }).then(response => {
-    var options = url.parse(payload.response_url);
-    options.method = 'POST';
-    options.headers = { 'Content-Type': 'application/json' };
-    return httpsRequest(options, JSON.stringify(response));
-  }).then(() => {
-    return { text: "posted" };
   }).then(value => callback(null, value), err => callback(err));
 };
 
