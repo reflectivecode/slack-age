@@ -25,9 +25,8 @@ resource "aws_iam_role" "role" {
 EOF
 }
 
-resource "aws_iam_policy_attachment" "attachment" {
-  name       = "AWSLambdaBasicExecutionRole"
-  roles      = ["${aws_iam_role.role.id}"]
+resource "aws_iam_role_policy_attachment" "attachment" {
+  role      = "${aws_iam_role.role.id}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
