@@ -14,7 +14,7 @@ variable "region" {
 }
 
 variable "slack_token" {
-  type    = "string"
+  type = "string"
 }
 
 variable "imgflip_template" {
@@ -23,9 +23,9 @@ variable "imgflip_template" {
 }
 
 variable "imgflip_user" {
-  type    = "string"
+  type = "string"
 }
 
 variable "imgflip_pass" {
-  type    = "string"
+  type = "string"
 }

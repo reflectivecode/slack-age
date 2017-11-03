@@ -14,6 +14,7 @@ module "webhook_post" {
   resource_path   = "${aws_api_gateway_resource.webhook.path}"
   has_role_policy = "0"
   role_policy     = ""
+
   variables = {
     APP_SLACK_TOKEN      = "${var.slack_token}"
     APP_IMGFLIP_TEMPLATE = "${var.imgflip_template}"

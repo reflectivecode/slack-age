@@ -1,9 +1,8 @@
 resource "aws_api_gateway_resource" "webhook2" {
   rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  parent_id = "${aws_api_gateway_rest_api.api.root_resource_id}"
-  path_part = "webhook2"
+  parent_id   = "${aws_api_gateway_rest_api.api.root_resource_id}"
+  path_part   = "webhook2"
 }
-
 
 module "webhook_post2" {
   source          = "./modules/api_method"

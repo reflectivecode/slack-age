@@ -15,17 +15,17 @@ variable "filename" {
 }
 
 variable "runtime" {
-  type = "string"
+  type    = "string"
   default = "nodejs4.3"
 }
 
 variable "handler" {
-  type = "string"
+  type    = "string"
   default = "index.handler"
 }
 
 variable "timeout" {
-  type = "string"
+  type    = "string"
   default = "3"
 }
 
@@ -50,7 +50,7 @@ variable "resource_path" {
 }
 
 variable "response_schema" {
-  type = "string"
+  type    = "string"
   default = "{ \"type\": \"object\" }"
 }
 
@@ -65,7 +65,8 @@ variable "role_policy" {
 }
 
 variable "variables" {
-  type    = "map"
+  type = "map"
+
   default = {
     dummy = true
   }

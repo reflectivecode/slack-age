@@ -1,4 +1,4 @@
-data "aws_caller_identity" "current" { }
+data "aws_caller_identity" "current" {}
 
 data "archive_file" "file" {
   type        = "zip"
@@ -8,6 +8,7 @@ data "archive_file" "file" {
 
 resource "aws_iam_role" "role" {
   name = "${var.name}"
+
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -26,7 +27,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "attachment" {
-  role      = "${aws_iam_role.role.id}"
+  role       = "${aws_iam_role.role.id}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -45,6 +46,7 @@ resource "aws_lambda_function" "lambda" {
   runtime          = "${var.runtime}"
   handler          = "${var.handler}"
   timeout          = "${var.timeout}"
+
   environment = {
     variables = "${var.variables}"
   }
@@ -66,12 +68,13 @@ resource "aws_api_gateway_method" "method" {
 }
 
 resource "aws_api_gateway_integration" "integration" {
-  rest_api_id = "${var.rest_api_id}"
-  resource_id = "${var.resource_id}"
-  http_method = "${aws_api_gateway_method.method.http_method}"
-  type        = "AWS"
-  uri         = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.lambda.arn}/invocations"
+  rest_api_id             = "${var.rest_api_id}"
+  resource_id             = "${var.resource_id}"
+  http_method             = "${aws_api_gateway_method.method.http_method}"
+  type                    = "AWS"
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.lambda.arn}/invocations"
   integration_http_method = "POST"
+
   request_templates = {
     "application/x-www-form-urlencoded" = "{ \"body\" : $input.json('$') }"
   }
@@ -89,6 +92,7 @@ resource "aws_api_gateway_method_response" "200" {
   resource_id = "${var.resource_id}"
   http_method = "${aws_api_gateway_method.method.http_method}"
   status_code = "200"
+
   response_models = {
     "application/json" = "${aws_api_gateway_model.response_model.name}"
   }
