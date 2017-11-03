@@ -1,3 +1,8 @@
+variable "aws_profile" {
+  type    = "string"
+  default = "aws"
+}
+
 variable "project_name" {
   type    = "string"
   default = "SlackApp"
