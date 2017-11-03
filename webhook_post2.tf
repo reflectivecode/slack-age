@@ -20,10 +20,12 @@ module "webhook_post2" {
   resource_path   = "${aws_api_gateway_resource.webhook2.path}"
   has_role_policy = "0"
   role_policy     = ""
+
   variables = {
     APP_SLACK_TOKEN      = "i3bXBqbaL7AdwxHPPfs086aG"
     APP_IMGFLIP_TEMPLATE = "86050822"
     APP_IMGFLIP_PROUD    = "106610838"
+    APP_IMGFLIP_FALL     = "118718407"
     APP_IMGFLIP_USER     = "${var.imgflip_user}"
     APP_IMGFLIP_PASS     = "${var.imgflip_pass}"
   }

@@ -5,10 +5,12 @@ var url = require('url');
 var token       = process.env.APP_SLACK_TOKEN;
 var template_id = process.env.APP_IMGFLIP_TEMPLATE;
 var proud_id    = process.env.APP_IMGFLIP_PROUD;
+var fall_id    = process.env.APP_IMGFLIP_FALL;
 var user        = process.env.APP_IMGFLIP_USER;
 var pass        = process.env.APP_IMGFLIP_PASS;
 
 var proud_keywords = ["proud", "resource", "tool"]
+var fall_keywords = ["halo", "fall", "map"]
 
 exports.handler = (event, context, callback) => {
   var payload = querystring.parse(event.body);
@@ -89,8 +91,13 @@ function split(text) {
 
 function getTemplateId(text) {
   var lower = text.toLowerCase();
-  var hasKeyword = proud_keywords.some(keyword => text.indexOf(keyword) !== -1);
-  return hasKeyword ? proud_id : template_id;
+  if (proud_keywords.some(keyword => text.indexOf(keyword) !== -1)) {
+    return proud_id;
+  }
+  if (fall_keywords.some(keyword => text.indexOf(keyword) !== -1)) {
+    return fall_id;
+  }
+  return template_id;
 }
 
 function httpsRequest(options, body) {
