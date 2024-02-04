@@ -49,11 +49,10 @@ export default {
     if (text.toUpperCase().trim() === 'HELP' || text.trim().length === 0) {
       return respondWithHelp();
     } else {
-      return await respondWithImage(env, text);
+      return await respondWithImage(env, text, payload);
     }
   },
 };
-
 
 async function parseSlackRequest(request, env) {
   const slackToken = env.APP_SLACK_TOKEN;
@@ -124,20 +123,28 @@ function respondWithHelp() {
   });
 }
 
-async function respondWithImage(env, text) {
+async function respondWithImage(env, text, payload) {
   const message = presets.hasOwnProperty(text) ? presets[text] : text;
   const texts = split(message);
   const imageUrl = await captionImage(env, templateId, texts.text0, texts.text1);
 
-  return makeResponse({
-    response_type: 'in_channel',
-    attachments: [
-      {
-        image_url: imageUrl,
-        fallback: message
-      }
-    ]
+  await fetch(payload.response_url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    body: JSON.stringify({
+      response_type: 'in_channel',
+      attachments: [
+        {
+          image_url: imageUrl,
+          fallback: message
+        }
+      ]
+    })
   });
+
+  return new Response();
 }
 
 const semicolonRegex = /^\s*(.*?)\s*;\s*(.*?)\s*$/;
