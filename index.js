@@ -1,6 +1,6 @@
-const imgflipTemplateId = '58512784';
+const templateId = '58512784';
 
-const responses = {
+const presets = {
   "1": "Yes",
   "2": "No",
   "3": "Food please",
@@ -43,117 +43,36 @@ const responses = {
 
 export default {
   async fetch(request, env, context) {
-    const slackToken = env.APP_SLACK_TOKEN;
-    const imgflipUser = env.APP_IMGFLIP_USER;
-    const imgflipPass = env.APP_IMGFLIP_PASS;
-    const slackSigningSecret = env.APP_SLACK_SIGNING_SECRET;
+    const payload = await parseSlackRequest(request, env);
+    const { text } = payload;
 
-    const blobRequestBody = await request.blob();
-    const rawBody = await blobRequestBody.text();
-
-    if (!await verifySlackRequest(slackSigningSecret, request.headers, rawBody)) {
-      return new Response('invalid signature', { status: 401 });
-    }
-
-    const payload = new URLSearchParams(rawBody);
-    if (payload.get('token') !== slackToken) {
-      return new Response('invalid token', { status: 401 });
-    }
-
-    console.log(payload);
-
-    const payloadText = payload.get('text');
-
-    if (payloadText.toUpperCase().trim() === 'HELP' || payloadText.trim().length === 0) {
-      var allMessages = '';
-      Object.keys(responses).forEach(key => {
-        allMessages += '\r' + key + ' → ' + responses[key];
-      });
-
-      return makeResponse({
-        'response_type': 'ephemeral',
-        'text': 'Creates an Age of Empires meme photo. Enter one of the numbers below or enter your own custom text.',
-        'attachments': [
-          {
-            'text': allMessages
-          }
-        ]
-      });
+    if (text.toUpperCase().trim() === 'HELP' || text.trim().length === 0) {
+      return respondWithHelp();
     } else {
-      var message = responses.hasOwnProperty(payloadText) ? responses[payloadText] : payloadText;
-      var texts = split(message);
-
-      const response = await fetch('https://api.imgflip.com/caption_image', {
-        method: 'POST',
-        headers:{
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          'template_id': imgflipTemplateId,
-          'username': imgflipUser,
-          'password': imgflipPass,
-          'text0': texts.text0,
-          'text1': texts.text1,
-        })
-      });
-
-      const responseJson = await response.json();
-      if (!responseJson.success) {
-        throw new Error(responseJson.error_message);
-      }
-
-      return makeResponse({
-        'response_type': 'in_channel',
-        'attachments': [
-          {
-            'image_url': responseJson.data.url,
-            'fallback': message
-          }
-        ]
-      });
+      return await respondWithImage(env, text);
     }
   },
 };
 
-var semicolonRegex = /^\s*(.*?)\s*;\s*(.*?)\s*$/;
-var periodRegex = /^\s*(.*?\.)\s+(.*?)\s*$/;
 
-function split(text) {
-  var match1 = semicolonRegex.exec(text);
-  if (match1) {
-    return {
-      text0: match1[1],
-      text1: match1[2]
-    };
+async function parseSlackRequest(request, env) {
+  const slackToken = env.APP_SLACK_TOKEN;
+  const slackSigningSecret = env.APP_SLACK_SIGNING_SECRET;
+
+  const blob = await request.blob();
+  const text = await blob.text();
+  console.log({ requestBody: text });
+
+  if (!await verifySlackRequest(slackSigningSecret, request.headers, text)) {
+    return new Response('invalid signature', { status: 401 });
   }
-  var match2 = periodRegex.exec(text);
-  if (match2) {
-    return {
-      text0: match2[1],
-      text1: match2[2]
-    };
+
+  const payload = new URLSearchParams(text);
+  if (payload.get('token') !== slackToken) {
+    return new Response('invalid token', { status: 401 });
   }
-  text = text.trim();
-  var middle = Math.ceil(text.length / 2);
-  while (middle > 0) {
-    if (text[middle] === ' ') {
-      return {
-        text0: text.substr(0, middle).trim(),
-        text1: text.substr(middle + 1).trim()
-      };
-    }
-    if (text[text.length - middle] === ' ') {
-      return {
-        text0: text.substr(0, text.length - middle).trim(),
-        text1: text.substr(text.length - middle + 1).trim()
-      };
-    }
-    middle -= 1;
-  }
-  return {
-    text0: '',
-    text1: text
-  };
+
+  return Object.fromEntries(payload);
 }
 
 async function verifySlackRequest(signingSecret, requestHeaders, requestBody) {
@@ -186,6 +105,106 @@ function fromHexStringToBytes(hexString) {
     bytes[idx / 2] = parseInt(hexString.substring(idx, idx + 2), 16);
   }
   return bytes.buffer;
+}
+
+function respondWithHelp() {
+  let allPresets = '';
+  Object.keys(presets).forEach(key => {
+    allPresets += '\r' + key + ' → ' + presets[key];
+  });
+
+  return makeResponse({
+    response_type: 'ephemeral',
+    text: 'Creates an Age of Empires meme photo. Enter one of the numbers below or enter your own custom text.',
+    attachments: [
+      {
+        text: allPresets
+      }
+    ]
+  });
+}
+
+async function respondWithImage(env, text) {
+  const message = presets.hasOwnProperty(text) ? presets[text] : text;
+  const texts = split(message);
+  const imageUrl = await captionImage(env, templateId, texts.text0, texts.text1);
+
+  return makeResponse({
+    response_type: 'in_channel',
+    attachments: [
+      {
+        image_url: imageUrl,
+        fallback: message
+      }
+    ]
+  });
+}
+
+const semicolonRegex = /^\s*(.*?)\s*;\s*(.*?)\s*$/;
+const periodRegex = /^\s*(.*?\.)\s+(.*?)\s*$/;
+
+function split(text) {
+  const match1 = semicolonRegex.exec(text);
+  if (match1) {
+    return {
+      text0: match1[1],
+      text1: match1[2]
+    };
+  }
+  const match2 = periodRegex.exec(text);
+  if (match2) {
+    return {
+      text0: match2[1],
+      text1: match2[2]
+    };
+  }
+  text = text.trim();
+  let middle = Math.ceil(text.length / 2);
+  while (middle > 0) {
+    if (text[middle] === ' ') {
+      return {
+        text0: text.substr(0, middle).trim(),
+        text1: text.substr(middle + 1).trim()
+      };
+    }
+    if (text[text.length - middle] === ' ') {
+      return {
+        text0: text.substr(0, text.length - middle).trim(),
+        text1: text.substr(text.length - middle + 1).trim()
+      };
+    }
+    middle -= 1;
+  }
+  return {
+    text0: '',
+    text1: text
+  };
+}
+
+async function captionImage(env, template_id, text0, text1) {
+  const username = env.APP_IMGFLIP_USER;
+  const password = env.APP_IMGFLIP_PASS;
+
+  const response = await fetch('https://api.imgflip.com/caption_image', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      template_id,
+      text0,
+      text1,
+      username,
+      password,
+    })
+  });
+
+  const json = await response.json();
+  if (!json.success) {
+    throw new Error(json.error_message);
+  }
+
+  return json.data.url;
 }
 
 function makeResponse(json) {
