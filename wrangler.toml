@@ -2,4 +2,4 @@ name = "aoe"
 main = "index.js"
 compatibility_date = "2023-12-01"
 no_bundle = true
-
+keep_vars = true
