@@ -135,11 +135,23 @@ async function respondWithImage(env, text, payload) {
     },
     body: JSON.stringify({
       response_type: 'in_channel',
-      attachments: [
+      blocks: [
         {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: "<@" + payload.user_id + "> posted using /age",
+          }
+        },
+        {
+          type: 'image',
           image_url: imageUrl,
-          fallback: message
-        }
+          alt_text: message,
+          title: {
+            type: "plain_text",
+            text: message,
+          }
+        },
       ]
     })
   });
