@@ -1,5 +1,0 @@
-/build/
-/.terraform/
-/*.tfstate
-/*.tfstate.backup
-/terraform.tfvars
