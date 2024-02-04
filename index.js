@@ -1,3 +1,5 @@
+const imgflipTemplateId = '58512784';
+
 const responses = {
   "1": "Yes",
   "2": "No",
@@ -42,7 +44,6 @@ const responses = {
 export default {
   async fetch(request, env, context) {
     const slackToken = env.APP_SLACK_TOKEN;
-    const imgflipTemplateId = env.APP_IMGFLIP_TEMPLATE;
     const imgflipUser = env.APP_IMGFLIP_USER;
     const imgflipPass = env.APP_IMGFLIP_PASS;
     const slackSigningSecret = env.APP_SLACK_SIGNING_SECRET;
@@ -68,7 +69,7 @@ export default {
       Object.keys(responses).forEach(key => {
         allMessages += '\r' + key + ' → ' + responses[key];
       });
-      
+
       return makeResponse({
         'response_type': 'ephemeral',
         'text': 'Creates an Age of Empires meme photo. Enter one of the numbers below or enter your own custom text.',
@@ -86,7 +87,7 @@ export default {
         method: 'POST',
         headers:{
           'Content-Type': 'application/x-www-form-urlencoded'
-        },    
+        },
         body: new URLSearchParams({
           'template_id': imgflipTemplateId,
           'username': imgflipUser,
